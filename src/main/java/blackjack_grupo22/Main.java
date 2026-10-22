@@ -1,6 +1,7 @@
 
 package blackjack_grupo22;
 
+import blackjack_grupo22.modelo.Mazo;
 import blackjack_grupo22.modelo.Carta;
 import blackjack_grupo22.modelo.Palo;
 import blackjack_grupo22.modelo.Valor;
@@ -22,12 +23,24 @@ public class Main extends Application {
     // "ventanaPrincipal" es la ventana que JavaFX crea para nosotros.
     @Override
     public void start(Stage ventanaPrincipal) {
-        Carta c1 = new Carta(Valor.AS, Palo.CORAZONES);
-        Carta c2 = new Carta(Valor.K, Palo.PICAS);
-        System.out.println(c1 + " -> " + c1.getPuntos() + " puntos, imagen: " + c1.getNombreImagen());
-        System.out.println(c2 + " -> " + c2.getPuntos() + " puntos, imagen: " + c2.getNombreImagen());
-        System.out.println("¿K es figura? " + c2.getValor().esFigura());
-        System.out.println("¿Son iguales? " + c1.equals(c2));
+        Mazo mazo = new Mazo();
+        System.out.println("Cartas en el mazo: " + mazo.cartasRestantes());
+
+// Repartimos las 52 cartas y verificamos que ninguna se repita
+        Carta[] repartidas = new Carta[52];
+        int repetidas = 0;
+        for (int i = 0; i < 52; i++) {
+            repartidas[i] = mazo.repartir();
+            // Comparamos la carta nueva con todas las anteriores
+            for (int k = 0; k < i; k++) {
+                if (repartidas[i].equals(repartidas[k])) {
+                    repetidas++;
+                }
+            }
+        }
+        System.out.println("Cartas repartidas: 52, repetidas encontradas: " + repetidas);
+        System.out.println("Cartas que quedan: " + mazo.cartasRestantes());
+        System.out.println("Primeras 3 cartas: " + repartidas[0] + ", " + repartidas[1] + ", " + repartidas[2]);
 
         Label mensaje = new Label("Blackjack - Grupo 22");
         StackPane raiz = new StackPane(mensaje);

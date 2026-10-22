@@ -18,3 +18,4 @@ o desde la terminal: `mvn javafx:run`
 
 ## Avance del proyecto
 - [x] Paso 1: configuración del proyecto
+- [x] Paso 2: Palo, Valor y Carta
