@@ -123,7 +123,78 @@ public class Mano {
         }
         return false;
     }
+    /**
+     * Indica si la mano es Blackjack: exactamente DOS cartas,
+     * un As y una carta que vale 10 (10, J, Q o K), en cualquier orden.
+     * Un 21 de tres o más cartas NO es Blackjack.
+     */
+    public boolean esBlackjack() {
+        if (cantidad != 2) {
+            return false;
+        }
 
+        Carta primera = obtenerCarta(0);
+        Carta segunda = obtenerCarta(1);
+
+        // Caso 1: la primera es As y la segunda vale 10
+        if (primera.esAs() && segunda.getValor().valeDiez()) {
+            return true;
+        }
+        // Caso 2: la segunda es As y la primera vale 10
+        if (segunda.esAs() && primera.getValor().valeDiez()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Indica si la mano es Veintiuno: puntaje de 21 pero que NO es Blackjack.
+     */
+    public boolean esVeintiuno() {
+        if (calcularPuntaje() == 21 && !esBlackjack()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Indica si la mano es Veinte y medio: tiene exactamente DOS cartas
+     * (las dos primeras) y su puntaje es 14.
+     * Si el jugador pide una tercera carta, deja de ser Veinte y medio.
+      */
+    public boolean esVeinteYMedio() {
+        Carta primera = obtenerCarta(0);
+        Carta segunda = obtenerCarta(1);
+
+        if (primera.getValor().esFigura() && segunda.getValor() == Valor.CUATRO) {
+            return true;
+        }
+        if (segunda.getValor().esFigura() && primera.getValor() == Valor.CUATRO) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Determina la jugada de la mano. El orden de las preguntas importa:
+     * primero se mira si se pasó, luego las jugadas de 21 y, al final,
+     * el Veinte y medio. Si ninguna aplica, la jugada es NORMAL.
+     */
+    public jugada determinarJugada() {
+        if (estaPasada()) {
+            return blackjack_grupo22.modelo.jugada.PASADO;
+        }
+        if (esBlackjack()) {
+            return blackjack_grupo22.modelo.jugada.BLACKJACK;
+        }
+        if (esVeintiuno()) {
+            return blackjack_grupo22.modelo.jugada.VEINTIUNO;
+        }
+        if (esVeinteYMedio()) {
+            return blackjack_grupo22.modelo.jugada.VEINTE_Y_MEDIO;
+        }
+        return blackjack_grupo22.modelo.jugada.NORMAL;
+    }
     /**
      * Vacía la mano (se usa al comenzar una nueva ronda).
      */

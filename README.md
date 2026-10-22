@@ -20,3 +20,4 @@ o desde la terminal: `mvn javafx:run`
 - [x] Paso 1: configuración del proyecto
 - [x] Paso 2: Palo, Valor y Carta
 - [x] Paso 3: Mazo (arreglo de 52, barajar y repartir)
+- [x] Paso 4: Nodo y Mano (lista enlazada, puntaje y ases)
