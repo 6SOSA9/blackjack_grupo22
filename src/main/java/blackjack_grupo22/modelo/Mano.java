@@ -162,13 +162,24 @@ public class Mano {
      * (las dos primeras) y su puntaje es 14.
      * Si el jugador pide una tercera carta, deja de ser Veinte y medio.
       */
+    /**
+     * Indica si la mano es Veinte y medio: exactamente DOS cartas,
+     * una figura (J, Q o K) y un 4, en cualquier orden y sin importar el palo.
+     * Si el jugador pide una tercera carta, deja de ser Veinte y medio.
+     */
     public boolean esVeinteYMedio() {
+        if (cantidad != 2) {
+            return false;
+        }
+
         Carta primera = obtenerCarta(0);
         Carta segunda = obtenerCarta(1);
 
+        // Caso 1: la primera es figura y la segunda es un 4
         if (primera.getValor().esFigura() && segunda.getValor() == Valor.CUATRO) {
             return true;
         }
+        // Caso 2: la segunda es figura y la primera es un 4
         if (segunda.getValor().esFigura() && primera.getValor() == Valor.CUATRO) {
             return true;
         }

@@ -5,7 +5,7 @@ public enum jugada {
 
     BLACKJACK("Blackjack", "¡Blackjack! As y carta de diez en las dos primeras cartas."),
     VEINTIUNO("Veintiuno", "¡Veintiuno! Puntaje de 21 sin ser Blackjack."),
-    VEINTE_Y_MEDIO("Veinte y medio", "¡Veinte y medio! Tus dos primeras cartas suman 14."),
+    VEINTE_Y_MEDIO("Veinte y medio", "¡Veinte y medio! Una figura y un 4 en las dos primeras cartas."),
     PASADO("Pasarse", "Te pasaste de 21."),
     NORMAL("Normal", "");
 

@@ -43,7 +43,56 @@ public class Mazo {
         construirMazoOrdenado();
         barajar();
     }
+    /**
+     * Constructor para PRUEBAS: crea un mazo SIN barajar donde las primeras
+     * cartas son exactamente las que se indican, en ese orden. Después van
+     * las demás cartas hasta completar las 52. En el juego normal NO se usa.
+     */
+    public Mazo(Carta[] primeras) {
+        this.generador = new Random();
 
+        if (primeras.length > TOTAL_CARTAS) {
+            throw new IllegalArgumentException("No pueden indicarse más de 52 cartas.");
+        }
+        // Se revisa que las cartas indicadas no se repitan entre sí
+        for (int i = 0; i < primeras.length; i++) {
+            for (int k = i + 1; k < primeras.length; k++) {
+                if (primeras[i].equals(primeras[k])) {
+                    throw new IllegalArgumentException("Carta repetida: " + primeras[i]);
+                }
+            }
+        }
+
+        // Se construye el mazo ordenado para saber cuáles son las 52 cartas
+        this.cartas = new Carta[TOTAL_CARTAS];
+        construirMazoOrdenado();
+
+        Carta[] resultado = new Carta[TOTAL_CARTAS];
+        int indice = 0;
+
+        // Primero van las cartas indicadas
+        for (int i = 0; i < primeras.length; i++) {
+            resultado[indice] = primeras[i];
+            indice++;
+        }
+
+        // Luego, las cartas restantes (las que no estaban en "primeras")
+        for (int i = 0; i < TOTAL_CARTAS; i++) {
+            boolean yaEsta = false;
+            for (int k = 0; k < primeras.length; k++) {
+                if (cartas[i].equals(primeras[k])) {
+                    yaEsta = true;
+                }
+            }
+            if (!yaEsta) {
+                resultado[indice] = cartas[i];
+                indice++;
+            }
+        }
+
+        this.cartas = resultado;
+        this.posicionSiguiente = 0;
+    }
     /**
      * Llena el arreglo con las 52 combinaciones de palo y valor.
      * Recorre los 4 palos y, dentro de cada uno, los 13 valores.

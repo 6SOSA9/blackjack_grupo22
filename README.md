@@ -21,3 +21,5 @@ o desde la terminal: `mvn javafx:run`
 - [x] Paso 2: Palo, Valor y Carta
 - [x] Paso 3: Mazo (arreglo de 52, barajar y repartir)
 - [x] Paso 4: Nodo y Mano (lista enlazada, puntaje y ases)
+- [x] Paso 5: Jugadas (Blackjack, Veintiuno, Veinte y medio, Pasarse)
+- [x] Paso 6: Juego (apuestas, saldo, validación e inicio de ronda)
