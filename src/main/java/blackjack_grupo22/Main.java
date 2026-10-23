@@ -16,53 +16,120 @@ public class Main extends Application {
     @Override
     public void start(Stage ventanaPrincipal) {
 
-        // 1. Validación de apuestas con saldo 1000
-        System.out.println("--- Prueba de apuestas ---");
-        Juego juego = new Juego();
-        String[] pruebas = {"", "hola", "15", "0", "-10", "10,5", "10.5", "1010", "5", "  100  "};
-        for (int i = 0; i < pruebas.length; i++) {
-            String error = juego.validarApuesta(pruebas[i]);
-            if (error == null) {
-                System.out.println("\"" + pruebas[i] + "\" -> VÁLIDA");
-            } else {
-                System.out.println("\"" + pruebas[i] + "\" -> " + error);
-            }
-        }
+        // A. Victoria ordinaria: jugador 18, computador 17
+        System.out.println("--- A. Victoria ordinaria (18 contra 17) ---");
+        Juego a = new Juego();
+        a.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.DIEZ, Palo.CORAZONES), carta(Valor.OCHO, Palo.PICAS),
+                carta(Valor.DIEZ, Palo.DIAMANTES), carta(Valor.SIETE, Palo.TREBOLES)}));
+        a.plantarse();
+        a.jugarTurnoComputador();
+        mostrarFinal(a);
 
-        // 2. Ronda con Blackjack inicial (mazo controlado: As + K)
-        System.out.println("--- Ronda con Blackjack inicial ---");
-        Mazo mazoBlackjack = new Mazo(new Carta[]{
-                new Carta(Valor.AS, Palo.CORAZONES),
-                new Carta(Valor.K, Palo.PICAS)
-        });
-        String errorInicio = juego.iniciarRondaConMazo("100", mazoBlackjack);
-        System.out.println("Error al iniciar: " + errorInicio);
-        mostrarEstado(juego);
-        System.out.println("Cartas en el mazo: " + juego.cartasRestantesEnMazo());
-        System.out.println("Segundo intento: " + juego.iniciarRonda("100"));
-        System.out.println("Saldo tras segundo intento: " + juego.getSaldo());
+        // B. Derrota: jugador 17, computador 19
+        System.out.println("--- B. Derrota (17 contra 19) ---");
+        Juego b = new Juego();
+        b.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.DIEZ, Palo.CORAZONES), carta(Valor.SIETE, Palo.PICAS),
+                carta(Valor.DIEZ, Palo.DIAMANTES), carta(Valor.NUEVE, Palo.TREBOLES)}));
+        b.plantarse();
+        b.jugarTurnoComputador();
+        mostrarFinal(b);
 
-        // 3. Ronda con Veinte y medio (mazo controlado: K + 4)
-        System.out.println("--- Ronda con Veinte y medio ---");
-        Juego juego2 = new Juego();
-        Mazo mazoVeinteYMedio = new Mazo(new Carta[]{
-                new Carta(Valor.K, Palo.CORAZONES),
-                new Carta(Valor.CUATRO, Palo.PICAS)
-        });
-        juego2.iniciarRondaConMazo("100", mazoVeinteYMedio);
-        mostrarEstado(juego2);
+        // C. Empate: 18 contra 18
+        System.out.println("--- C. Empate (18 contra 18) ---");
+        Juego c = new Juego();
+        c.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.DIEZ, Palo.CORAZONES), carta(Valor.OCHO, Palo.PICAS),
+                carta(Valor.DIEZ, Palo.DIAMANTES), carta(Valor.OCHO, Palo.TREBOLES)}));
+        c.plantarse();
+        c.jugarTurnoComputador();
+        mostrarFinal(c);
 
-        // 4. Una apuesta inválida no inicia la ronda
-        System.out.println("--- Apuesta inválida no inicia ---");
-        Juego juego3 = new Juego();
-        System.out.println("Error: " + juego3.iniciarRonda("15"));
-        mostrarEstado(juego3);
+        // D. Victoria con Blackjack (el computador no pide aunque tenga 16)
+        System.out.println("--- D. Victoria con Blackjack ---");
+        Juego d = new Juego();
+        d.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.AS, Palo.CORAZONES), carta(Valor.K, Palo.PICAS),
+                carta(Valor.NUEVE, Palo.DIAMANTES), carta(Valor.SIETE, Palo.TREBOLES)}));
+        d.jugarTurnoComputador();
+        mostrarFinal(d);
 
-        // 5. Apuesta igual al saldo
-        System.out.println("--- Apuesta igual al saldo ---");
-        Juego juego4 = new Juego();
-        juego4.iniciarRonda("1000");
-        System.out.println("Saldo: " + juego4.getSaldo() + " | Apuesta: " + juego4.getApuesta());
+        // E. Blackjack doble: empate
+        System.out.println("--- E. Blackjack doble ---");
+        Juego e = new Juego();
+        e.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.AS, Palo.CORAZONES), carta(Valor.K, Palo.PICAS),
+                carta(Valor.AS, Palo.DIAMANTES), carta(Valor.K, Palo.DIAMANTES)}));
+        e.jugarTurnoComputador();
+        mostrarFinal(e);
+
+        // F. Prioridad: jugador 7+7+7 (21), computador con Blackjack
+        System.out.println("--- F. Prioridad del Blackjack del computador ---");
+        Juego f = new Juego();
+        f.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.SIETE, Palo.CORAZONES), carta(Valor.SIETE, Palo.PICAS),
+                carta(Valor.SIETE, Palo.TREBOLES),
+                carta(Valor.AS, Palo.DIAMANTES), carta(Valor.K, Palo.DIAMANTES)}));
+        f.pedirCarta();
+        f.jugarTurnoComputador();
+        mostrarFinal(f);
+
+        // G. El jugador se pasa: el computador no juega
+        System.out.println("--- G. El jugador se pasa ---");
+        Juego g = new Juego();
+        g.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.K, Palo.CORAZONES), carta(Valor.NUEVE, Palo.PICAS),
+                carta(Valor.CINCO, Palo.TREBOLES)}));
+        g.pedirCarta();
+        mostrarFinal(g);
+
+        // H. El computador pide con 16 y se pasa
+        System.out.println("--- H. El computador pide con 16 y se pasa ---");
+        Juego h = new Juego();
+        h.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.DIEZ, Palo.CORAZONES), carta(Valor.OCHO, Palo.PICAS),
+                carta(Valor.DIEZ, Palo.DIAMANTES), carta(Valor.SEIS, Palo.TREBOLES),
+                carta(Valor.K, Palo.PICAS)}));
+        h.plantarse();
+        h.jugarTurnoComputador();
+        mostrarFinal(h);
+
+        // I. El computador se planta con As + 6 (17)
+        System.out.println("--- I. El computador se planta con As + 6 ---");
+        Juego i = new Juego();
+        i.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.DIEZ, Palo.CORAZONES), carta(Valor.OCHO, Palo.PICAS),
+                carta(Valor.AS, Palo.DIAMANTES), carta(Valor.SEIS, Palo.TREBOLES)}));
+        i.plantarse();
+        i.jugarTurnoComputador();
+        mostrarFinal(i);
+
+        // J. Veinte y medio (14) le gana a 19
+        System.out.println("--- J. Veinte y medio contra 19 ---");
+        Juego j = new Juego();
+        j.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.K, Palo.CORAZONES), carta(Valor.CUATRO, Palo.PICAS),
+                carta(Valor.DIEZ, Palo.DIAMANTES), carta(Valor.NUEVE, Palo.TREBOLES)}));
+        j.plantarse();
+        j.jugarTurnoComputador();
+        mostrarFinal(j);
+
+        // K. Acciones fuera de turno y repetidas
+        System.out.println("--- K. Acciones fuera de turno ---");
+        Juego k = new Juego();
+        System.out.println("Pedir antes de la ronda: " + k.pedirCarta());
+        System.out.println("Plantarse antes de la ronda: " + k.plantarse());
+        System.out.println("Turno computador antes de tiempo: " + k.jugarTurnoComputador());
+        k.iniciarRondaConMazo("100", new Mazo(new Carta[]{
+                carta(Valor.DIEZ, Palo.CORAZONES), carta(Valor.OCHO, Palo.PICAS),
+                carta(Valor.DIEZ, Palo.DIAMANTES), carta(Valor.SIETE, Palo.TREBOLES)}));
+        System.out.println("Plantarse (1.ª vez): " + k.plantarse());
+        System.out.println("Plantarse (2.ª vez): " + k.plantarse());
+        System.out.println("Pedir carta después de plantarse: " + k.pedirCarta());
+        System.out.println("Turno del computador (1.ª vez): " + k.jugarTurnoComputador());
+        System.out.println("Turno del computador (2.ª vez): " + k.jugarTurnoComputador());
+        System.out.println("Saldo final: " + k.getSaldo() + " (se pagó una sola vez)");
 
         Label mensaje = new Label("Blackjack - Grupo 22");
         StackPane raiz = new StackPane(mensaje);
@@ -72,13 +139,21 @@ public class Main extends Application {
         ventanaPrincipal.show();
     }
 
-    // Método auxiliar temporal: imprime el estado del juego
-    private void mostrarEstado(Juego juego) {
-        System.out.println("Saldo: " + juego.getSaldo() + " | Apuesta: " + juego.getApuesta()
-                + " | Estado: " + juego.getEstado());
+    // Método auxiliar temporal: escribe menos al crear cartas
+    private Carta carta(Valor valor, Palo palo) {
+        return new Carta(valor, palo);
+    }
+
+    // Método auxiliar temporal: imprime cómo terminó la ronda
+    private void mostrarFinal(Juego juego) {
         System.out.println("Jugador: " + juego.getManoJugador() + " -> "
-                + juego.getManoJugador().calcularPuntaje()
-                + " (" + juego.getJugadaJugador().getNombre() + ")");
-        System.out.println("Computador: " + juego.getManoComputador());
+                + juego.getManoJugador().calcularPuntaje());
+        System.out.println("Computador: " + juego.getManoComputador() + " -> "
+                + juego.getManoComputador().calcularPuntaje());
+        System.out.println("Estado: " + juego.getEstado()
+                + " | Resultado: " + juego.getResultado().getNombre()
+                + " | Pago: " + juego.getPagoUltimaRonda()
+                + " | Saldo: " + juego.getSaldo());
+        System.out.println("Mensaje: " + juego.getMensajeFinal());
     }
 }

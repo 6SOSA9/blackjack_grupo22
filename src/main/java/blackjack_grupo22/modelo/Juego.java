@@ -17,7 +17,9 @@ public class Juego {
     private Mazo mazo;                    // mazo compartido por ambos participantes
     private final Mano manoJugador;
     private final Mano manoComputador;
-
+    private Resultado resultado;           // resultado de la última ronda (null si aún no termina)
+    private String mensajeFinal;           // explicación de por qué se ganó, perdió o empató
+    private int pagoUltimaRonda;           // fichas acreditadas al terminar la ronda
     /**
      * Crea un juego nuevo: saldo de 1.000, sin apuesta y sin ronda.
      * Las dos manos existen pero están vacías.
@@ -29,6 +31,9 @@ public class Juego {
         this.mazo = new Mazo();
         this.manoJugador = new Mano();
         this.manoComputador = new Mano();
+        this.resultado = null;
+        this.mensajeFinal = "";
+        this.pagoUltimaRonda = 0;
     }
 
     // ------------------------------------------------------------
@@ -146,6 +151,10 @@ public class Juego {
         // La apuesta se descuenta UNA sola vez y queda fija en la ronda
         saldo = saldo - valor;
         apuesta = valor;
+        // Se borra el resultado de la ronda anterior
+        resultado = null;
+        mensajeFinal = "";
+        pagoUltimaRonda = 0;
 
         // Mazo completo y manos vacías para la nueva ronda
         mazo = mazoDeLaRonda;
@@ -167,12 +176,266 @@ public class Juego {
     }
 
     // ------------------------------------------------------------
+    // Acciones del jugador (HU04 y HU05)
+    // ------------------------------------------------------------
+
+    /**
+     * El jugador pide una carta. Solo se permite en TURNO_JUGADOR.
+     * Devuelve null si la acción se hizo, o un mensaje si no estaba permitida.
+     *
+     * Después de repartir la carta:
+     *  - si el jugador se pasó, pierde de inmediato (el computador no juega);
+     *  - si llegó a 21, su turno termina y pasa al computador;
+     *  - si no, sigue siendo su turno.
+     */
+    public String pedirCarta() {
+        if (estado != EstadoRonda.TURNO_JUGADOR) {
+            return "No es tu turno: no puedes pedir carta.";
+        }
+
+        manoJugador.agregarCarta(mazo.repartir());
+        int puntaje = manoJugador.calcularPuntaje();
+
+        if (puntaje > 21) {
+            finalizarRonda(Resultado.DERROTA);
+        } else if (puntaje == 21) {
+            estado = EstadoRonda.TURNO_COMPUTADOR;
+        }
+        return null;
+    }
+
+    /**
+     * El jugador se planta con su mano actual. Solo se permite en TURNO_JUGADOR.
+     * Este método solo cambia el turno; el computador juega cuando se
+     * llama a jugarTurnoComputador().
+     */
+    public String plantarse() {
+        if (estado != EstadoRonda.TURNO_JUGADOR) {
+            return "No es tu turno: no puedes plantarte.";
+        }
+        estado = EstadoRonda.TURNO_COMPUTADOR;
+        return null;
+    }
+
+    // ------------------------------------------------------------
+    // Turno del computador (HU06)
+    // ------------------------------------------------------------
+
+    /**
+     * Ejecuta el turno completo del computador como una secuencia corta:
+     *   1. Recibe sus dos primeras cartas.
+     *   2. Si alguno de los dos tiene Blackjack, no pide más cartas
+     *      (la ronda se resuelve con las dos cartas iniciales).
+     *   3. Si no, pide mientras su puntaje sea menor que 17 y se planta
+     *      con 17 o más. Un As contado como 11 también cuenta (As + 6 = 17).
+     *   4. Se determina el resultado y se liquida la apuesta.
+     *
+     * Sus decisiones dependen solo de su propia mano, no de la del jugador.
+     * Solo funciona en TURNO_COMPUTADOR, así que no puede ejecutarse dos veces.
+     */
+    public String jugarTurnoComputador() {
+        if (estado != EstadoRonda.TURNO_COMPUTADOR) {
+            return "No es el turno del computador.";
+        }
+
+        // 1. Dos cartas iniciales
+        manoComputador.agregarCarta(mazo.repartir());
+        manoComputador.agregarCarta(mazo.repartir());
+
+        // 2. Si hay algún Blackjack, no se piden más cartas
+        boolean hayBlackjack = manoJugador.esBlackjack() || manoComputador.esBlackjack();
+
+        // 3. Regla de la banca: pedir mientras tenga menos de 17
+        if (!hayBlackjack) {
+            while (manoComputador.calcularPuntaje() < 17) {
+                manoComputador.agregarCarta(mazo.repartir());
+            }
+        }
+
+        // 4. Resultado y liquidación
+        Resultado r = determinarResultado(manoJugador, manoComputador);
+        finalizarRonda(r);
+        return null;
+    }
+
+    // ------------------------------------------------------------
+    // Resultado (HU08)
+    // ------------------------------------------------------------
+
+    /**
+     * Compara las dos manos y devuelve el resultado desde el punto de vista
+     * del jugador. No modifica nada: solo calcula. Por eso es público y se
+     * puede probar con manos armadas a mano.
+     *
+     * Orden de las reglas:
+     *   1. Quien se pasa pierde (primero se revisa al jugador).
+     *   2. Blackjack: si ambos lo tienen, empate; si solo uno, gana ese.
+     *   3. Veinte y medio: gana a cualquier mano de 20 o menos, pierde
+     *      ante cualquier 21, y empata con otro Veinte y medio.
+     *   4. Si no hay jugadas especiales, gana el mayor puntaje.
+     */
+    public Resultado determinarResultado(Mano jugador, Mano computador) {
+        // 1. Pasarse
+        if (jugador.estaPasada()) {
+            return Resultado.DERROTA;
+        }
+        if (computador.estaPasada()) {
+            return Resultado.VICTORIA;
+        }
+
+        // 2. Blackjack
+        boolean jugadorBlackjack = jugador.esBlackjack();
+        boolean computadorBlackjack = computador.esBlackjack();
+        if (jugadorBlackjack && computadorBlackjack) {
+            return Resultado.EMPATE;
+        }
+        if (jugadorBlackjack) {
+            return Resultado.VICTORIA_BLACKJACK;
+        }
+        if (computadorBlackjack) {
+            return Resultado.DERROTA;
+        }
+
+        // 3. Veinte y medio
+        boolean jugadorVeinteYMedio = jugador.esVeinteYMedio();
+        boolean computadorVeinteYMedio = computador.esVeinteYMedio();
+        if (jugadorVeinteYMedio && computadorVeinteYMedio) {
+            return Resultado.EMPATE;
+        }
+        if (jugadorVeinteYMedio) {
+            if (computador.calcularPuntaje() == 21) {
+                return Resultado.DERROTA;
+            }
+            return Resultado.VICTORIA;
+        }
+        if (computadorVeinteYMedio) {
+            if (jugador.calcularPuntaje() == 21) {
+                return Resultado.VICTORIA;
+            }
+            return Resultado.DERROTA;
+        }
+
+        // 4. Comparación normal de puntajes
+        int puntajeJugador = jugador.calcularPuntaje();
+        int puntajeComputador = computador.calcularPuntaje();
+        if (puntajeJugador > puntajeComputador) {
+            return Resultado.VICTORIA;
+        }
+        if (puntajeJugador < puntajeComputador) {
+            return Resultado.DERROTA;
+        }
+        return Resultado.EMPATE;
+    }
+
+    /**
+     * Construye el mensaje que explica la causa del resultado.
+     * Usa las manos tal como quedaron al final de la ronda.
+     */
+    private String explicarResultado(Resultado r) {
+        int puntajeJugador = manoJugador.calcularPuntaje();
+        int puntajeComputador = manoComputador.calcularPuntaje();
+
+        if (manoJugador.estaPasada()) {
+            return "Te pasaste de 21 con " + puntajeJugador + ". Pierdes la ronda.";
+        }
+        if (manoComputador.estaPasada()) {
+            return "El computador se pasó de 21 con " + puntajeComputador + ". ¡Ganaste!";
+        }
+        if (manoJugador.esBlackjack() && manoComputador.esBlackjack()) {
+            return "Ambos tienen Blackjack. Empate.";
+        }
+        if (manoJugador.esBlackjack()) {
+            return "¡Blackjack! Ganaste: el computador no tiene Blackjack.";
+        }
+        if (manoComputador.esBlackjack()) {
+            return "El computador tiene Blackjack y supera tu mano.";
+        }
+        if (manoJugador.esVeinteYMedio() && manoComputador.esVeinteYMedio()) {
+            return "Ambos tienen veinte y medio. Empate.";
+        }
+        if (manoJugador.esVeinteYMedio()) {
+            if (r == Resultado.VICTORIA) {
+                return "Tu veinte y medio vence al computador, que tiene " + puntajeComputador + " puntos.";
+            }
+            return "El computador tiene 21 y supera tu veinte y medio.";
+        }
+        if (manoComputador.esVeinteYMedio()) {
+            if (r == Resultado.VICTORIA) {
+                return "Tu 21 supera el veinte y medio del computador.";
+            }
+            return "El computador tiene veinte y medio y supera tu puntaje de " + puntajeJugador + ".";
+        }
+
+        // Comparación normal de puntajes
+        if (r == Resultado.EMPATE) {
+            return "Ambos tienen " + puntajeJugador + " puntos. Empate.";
+        }
+        if (r == Resultado.VICTORIA) {
+            return "Ganaste: tus " + puntajeJugador + " puntos superan los " + puntajeComputador + " del computador.";
+        }
+        return "Perdiste: los " + puntajeComputador + " puntos del computador superan tus " + puntajeJugador + ".";
+    }
+
+    // ------------------------------------------------------------
+    // Liquidación (HU09)
+    // ------------------------------------------------------------
+
+    /**
+     * Calcula cuántas fichas se ACREDITAN según el resultado.
+     * La apuesta ya se descontó al iniciar la ronda, por eso:
+     *   - Derrota: 0 (la apuesta descontada se pierde).
+     *   - Empate: se devuelve la apuesta.
+     *   - Victoria: se devuelve la apuesta y se gana otra igual (2 veces).
+     *   - Victoria con Blackjack: la apuesta más 1,5 veces (2,5 veces).
+     * Como la apuesta es múltiplo de 10, apuesta * 5 / 2 siempre es exacto.
+     */
+    private int calcularPago(Resultado r) {
+        if (r == Resultado.VICTORIA_BLACKJACK) {
+            return apuesta * 5 / 2;
+        }
+        if (r == Resultado.VICTORIA) {
+            return apuesta * 2;
+        }
+        if (r == Resultado.EMPATE) {
+            return apuesta;
+        }
+        return 0;
+    }
+
+    /**
+     * Cierra la ronda: guarda el resultado, acredita el pago y deja el
+     * estado en FINALIZADA. Solo actúa si la ronda está activa, así que el
+     * saldo se actualiza UNA sola vez por ronda aunque se repita la acción.
+     */
+    private void finalizarRonda(Resultado r) {
+        if (!rondaActiva()) {
+            return;
+        }
+        resultado = r;
+        mensajeFinal = explicarResultado(r);
+        pagoUltimaRonda = calcularPago(r);
+        saldo = saldo + pagoUltimaRonda;
+        estado = EstadoRonda.FINALIZADA;
+    }
+
+    // ------------------------------------------------------------
     // Consultas (las usarán el Controlador y la Vista)
     // ------------------------------------------------------------
 
     /**
      * Una ronda está activa mientras sea turno del jugador o del computador.
      */
+    public Resultado getResultado() {
+        return resultado;
+    }
+
+    public String getMensajeFinal() {
+        return mensajeFinal;
+    }
+
+    public int getPagoUltimaRonda() {
+        return pagoUltimaRonda;
+    }
     public boolean rondaActiva() {
         if (estado == EstadoRonda.TURNO_JUGADOR || estado == EstadoRonda.TURNO_COMPUTADOR) {
             return true;

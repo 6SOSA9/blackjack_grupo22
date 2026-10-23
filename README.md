@@ -23,3 +23,4 @@ o desde la terminal: `mvn javafx:run`
 - [x] Paso 4: Nodo y Mano (lista enlazada, puntaje y ases)
 - [x] Paso 5: Jugadas (Blackjack, Veintiuno, Veinte y medio, Pasarse)
 - [x] Paso 6: Juego (apuestas, saldo, validación e inicio de ronda)
+- [x] Paso 7: Juego (pedir, plantarse, computador, resultado y liquidación)
