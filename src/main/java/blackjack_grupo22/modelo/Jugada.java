@@ -1,7 +1,7 @@
 package blackjack_grupo22.modelo;
 
 
-public enum jugada {
+public enum Jugada {
 
     BLACKJACK("Blackjack", "¡Blackjack! As y carta de diez en las dos primeras cartas."),
     VEINTIUNO("Veintiuno", "¡Veintiuno! Puntaje de 21 sin ser Blackjack."),
@@ -12,7 +12,7 @@ public enum jugada {
     private final String nombre;    // nombre corto de la jugada
     private final String mensaje;   // mensaje que se mostrará al usuario
 
-    jugada(String nombre, String mensaje) {
+    Jugada(String nombre, String mensaje) {
         this.nombre = nombre;
         this.mensaje = mensaje;
     }

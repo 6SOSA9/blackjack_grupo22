@@ -24,3 +24,4 @@ o desde la terminal: `mvn javafx:run`
 - [x] Paso 5: Jugadas (Blackjack, Veintiuno, Veinte y medio, Pasarse)
 - [x] Paso 6: Juego (apuestas, saldo, validación e inicio de ronda)
 - [x] Paso 7: Juego (pedir, plantarse, computador, resultado y liquidación)
+- [x] Paso 8: Pruebas JUnit del modelo

@@ -191,20 +191,20 @@ public class Mano {
      * primero se mira si se pasó, luego las jugadas de 21 y, al final,
      * el Veinte y medio. Si ninguna aplica, la jugada es NORMAL.
      */
-    public jugada determinarJugada() {
+    public Jugada determinarJugada() {
         if (estaPasada()) {
-            return blackjack_grupo22.modelo.jugada.PASADO;
+            return Jugada.PASADO;
         }
         if (esBlackjack()) {
-            return blackjack_grupo22.modelo.jugada.BLACKJACK;
+            return Jugada.BLACKJACK;
         }
         if (esVeintiuno()) {
-            return blackjack_grupo22.modelo.jugada.VEINTIUNO;
+            return Jugada.VEINTIUNO;
         }
         if (esVeinteYMedio()) {
-            return blackjack_grupo22.modelo.jugada.VEINTE_Y_MEDIO;
+            return Jugada.VEINTE_Y_MEDIO;
         }
-        return blackjack_grupo22.modelo.jugada.NORMAL;
+        return Jugada.NORMAL;
     }
     /**
      * Vacía la mano (se usa al comenzar una nueva ronda).

@@ -224,13 +224,17 @@ public class Juego {
     /**
      * Ejecuta el turno completo del computador como una secuencia corta:
      *   1. Recibe sus dos primeras cartas.
-     *   2. Si alguno de los dos tiene Blackjack, no pide más cartas
-     *      (la ronda se resuelve con las dos cartas iniciales).
-     *   3. Si no, pide mientras su puntaje sea menor que 17 y se planta
-     *      con 17 o más. Un As contado como 11 también cuenta (As + 6 = 17).
+     *   2. NO pide más cartas si:
+     *        - alguno de los dos tiene Blackjack (la ronda se resuelve
+     *          con las dos cartas iniciales), o
+     *        - el computador tiene Veinte y medio (se planta con él).
+     *   3. En los demás casos pide mientras su puntaje sea menor que 17
+     *      y se planta con 17 o más. Un As contado como 11 también cuenta
+     *      (As + 6 = 17).
      *   4. Se determina el resultado y se liquida la apuesta.
      *
-     * Sus decisiones dependen solo de su propia mano, no de la del jugador.
+     * Sus decisiones dependen solo de su propia mano (y del Blackjack del
+     * jugador, que resuelve la ronda), no de su puntaje.
      * Solo funciona en TURNO_COMPUTADOR, así que no puede ejecutarse dos veces.
      */
     public String jugarTurnoComputador() {
@@ -242,11 +246,17 @@ public class Juego {
         manoComputador.agregarCarta(mazo.repartir());
         manoComputador.agregarCarta(mazo.repartir());
 
-        // 2. Si hay algún Blackjack, no se piden más cartas
-        boolean hayBlackjack = manoJugador.esBlackjack() || manoComputador.esBlackjack();
+        // 2. Casos en los que el computador no pide cartas
+        boolean sePlanta = false;
+        if (manoJugador.esBlackjack() || manoComputador.esBlackjack()) {
+            sePlanta = true;
+        }
+        if (manoComputador.esVeinteYMedio()) {
+            sePlanta = true;
+        }
 
         // 3. Regla de la banca: pedir mientras tenga menos de 17
-        if (!hayBlackjack) {
+        if (!sePlanta) {
             while (manoComputador.calcularPuntaje() < 17) {
                 manoComputador.agregarCarta(mazo.repartir());
             }
@@ -473,7 +483,7 @@ public class Juego {
         return manoComputador;
     }
 
-    public jugada getJugadaJugador() {
+    public Jugada getJugadaJugador() {
         return manoJugador.determinarJugada();
     }
 
