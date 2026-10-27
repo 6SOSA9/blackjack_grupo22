@@ -55,3 +55,4 @@ docs/ UML, casos de prueba y evidencias
 - [x] Paso 8: Pruebas JUnit del modelo
 - [x] Paso 9: Vista, Controlador e imágenes de cartas
 - [x] Paso 10: UML, casos de prueba y revisión final
+- [x] Paso adicional: un logo =)
