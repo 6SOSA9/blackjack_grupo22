@@ -1,5 +1,6 @@
 package blackjack_grupo22.vista;
 
+import javafx.scene.layout.Region;
 import blackjack_grupo22.modelo.Carta;
 import blackjack_grupo22.modelo.Mano;
 import blackjack_grupo22.modelo.Palo;
@@ -30,6 +31,7 @@ public class VistaJuego {
 
     private static final double ANCHO_CARTA = 80;
     private static final double ALTO_CARTA = 112;
+    private static final double ALTO_LOGO = 70;
 
     private final BorderPane raiz;
 
@@ -52,7 +54,7 @@ public class VistaJuego {
 
     public VistaJuego() {
         // ---------- Parte superior: título, saldo y apuesta ----------
-        Label titulo = new Label("BLACKJACK");
+        Label titulo = new Label("BLACKJACK DE CHILL");
         titulo.setFont(Font.font("Arial", FontWeight.BOLD, 28));
         titulo.setTextFill(Color.WHITE);
 
@@ -62,9 +64,15 @@ public class VistaJuego {
         HBox barraInfo = new HBox(40, lblSaldo, lblApuesta);
         barraInfo.setAlignment(Pos.CENTER);
 
-        VBox superior = new VBox(8, titulo, barraInfo);
-        superior.setAlignment(Pos.CENTER);
+        VBox bloqueCentral = new VBox(8, titulo, barraInfo);
+        bloqueCentral.setAlignment(Pos.CENTER);
+
+        // BorderPane en la parte superior: logo a la izquierda, título al centro
+        BorderPane superior = new BorderPane();
         superior.setPadding(new Insets(15));
+        superior.setCenter(bloqueCentral);
+        superior.setLeft(crearLogo());
+        superior.setRight(crearLogo());
 
         // ---------- Centro: zona del computador y zona del jugador ----------
         lblPuntajeComputador = crearEtiquetaPuntaje();
@@ -121,6 +129,23 @@ public class VistaJuego {
     // Métodos auxiliares de construcción
     // ------------------------------------------------------------
 
+    /**
+     * Crea el logo de la esquina. Si el archivo no existe, devuelve un
+     * espacio vacío para que el juego funcione igual sin la imagen.
+     */
+    private Node crearLogo() {
+        InputStream flujo = getClass().getResourceAsStream("/logo.png");
+
+        if (flujo != null) {
+            Image imagen = new Image(flujo);
+            ImageView vistaLogo = new ImageView(imagen);
+            vistaLogo.setFitHeight(ALTO_LOGO);
+            vistaLogo.setPreserveRatio(true);
+            vistaLogo.setSmooth(true);
+            return vistaLogo;
+        }
+        return new Region();
+    }
     private Label crearEtiquetaInfo() {
         Label etiqueta = new Label();
         etiqueta.setFont(Font.font("Arial", FontWeight.BOLD, 18));

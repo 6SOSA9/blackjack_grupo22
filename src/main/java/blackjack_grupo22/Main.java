@@ -1,5 +1,7 @@
 package blackjack_grupo22;
 
+import javafx.scene.image.Image;
+import java.io.InputStream;
 import blackjack_grupo22.controlador.ControladorJuego;
 import blackjack_grupo22.modelo.Juego;
 import blackjack_grupo22.vista.VistaJuego;
@@ -18,6 +20,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage ventanaPrincipal) {
+
         Juego modelo = new Juego();
         VistaJuego vista = new VistaJuego();
         ControladorJuego controlador = new ControladorJuego(modelo, vista, ventanaPrincipal);
@@ -29,5 +32,10 @@ public class Main extends Application {
         // Deja la pantalla en su estado inicial (HU01) antes de mostrarla
         controlador.iniciar();
         ventanaPrincipal.show();
+
+        InputStream flujoIcono = getClass().getResourceAsStream("/logo.png");
+        if (flujoIcono != null) {
+            ventanaPrincipal.getIcons().add(new Image(flujoIcono));
+        }
     }
 }
